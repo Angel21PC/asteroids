@@ -2,12 +2,17 @@ use bevy::prelude::*;
 
 mod player;
 use player::PlayerPlugin;
+
+mod debug;
+use debug::DebugPlugin;
+
 fn main() {
     App::new()
         .insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)))
         .add_plugins(DefaultPlugins)
         .add_plugin(PlayerPlugin)
         .add_startup_system(setup)
+        .add_plugin(DebugPlugin)
         .run();
 }
 
