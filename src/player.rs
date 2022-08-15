@@ -5,6 +5,7 @@ pub struct PlayerPlugin;
 #[derive(Component)]
 pub struct Player {
     speed: f32,
+    rotation: f32,
 }
 
 impl Plugin for PlayerPlugin {
@@ -20,7 +21,10 @@ fn spawn_player(mut commands: Commands, mut asset_server: Res<AssetServer>) {
     commands
         .entity(player_sprite)
         .insert(Name::new("Player"))
-        .insert(Player { speed: 222.0 });
+        .insert(Player {
+            speed: 222.0,
+            rotation: 0.0,
+        });
 }
 
 fn set_up_sprite(commands: &mut Commands, asset_server: &mut Res<AssetServer>) -> Entity {
@@ -41,12 +45,13 @@ fn set_up_sprite(commands: &mut Commands, asset_server: &mut Res<AssetServer>) -
 }
 
 fn player_movement(
-    mut query: Query<(&Player, &mut Transform)>,
+    mut query: Query<(&mut Player, &mut Transform)>,
     keyboard: Res<Input<KeyCode>>,
     time: Res<Time>,
 ) {
-    for (player, mut transform) in query.iter_mut() {
+    for (mut player, mut transform) in query.iter_mut() {
         let mut y_delta = 0.0;
+
         if keyboard.pressed(KeyCode::W) {
             y_delta += player.speed * time.delta_seconds();
         }
@@ -54,22 +59,19 @@ fn player_movement(
             y_delta -= player.speed * time.delta_seconds();
         }
 
-        let mut x_delta = 0.0;
         if keyboard.pressed(KeyCode::A) {
-            x_delta -= player.speed * time.delta_seconds();
+            player.rotation = player.rotation + 0.1;
         }
         if keyboard.pressed(KeyCode::D) {
-            x_delta += player.speed * time.delta_seconds();
+            player.rotation = player.rotation - 0.1;
         }
 
-        let target = transform.translation + Vec3::new(x_delta, 0.0, 0.0);
-
-        transform.translation = target;
-
         let target = transform.translation + Vec3::new(0.0, y_delta, 0.0);
-
         transform.translation = target;
 
-        println!("{:?}", transform.translation);
+        let target = Quat::from_rotation_z(player.rotation as f32);
+        transform.rotation = target;
+        println!("y_delta {:?}", y_delta);
+        println!("rotation {}", player.rotation);
     }
 }
